@@ -4,6 +4,7 @@
 #include <osgViewer/config/SingleWindow>
 #include <osgViewer/Viewer>
 #include "config.hpp"
+#include "masterfileindex.hpp"
 
 int main(int argc, char * argv[])
 {
@@ -54,6 +55,27 @@ int main(int argc, char * argv[])
         {
             window->setWindowName("Open Siege");
         }
+    }
+
+    /*
+
+     * This relies on the config class being init properly
+     * Maybe it is worth passing the config class to the ctor for clarity?
+     * TODO: xShould this be inside a state?
+     */
+    ehb::MasterFileIndex masterFileIndex;
+
+    {
+        // validate we can find the startup_verify.gpg file and if we can't we should die
+
+        siege::ByteArray data;
+
+        if (!masterFileIndex.readFile("/config/startup_verify.gpg", data))
+        {
+            throw std::runtime_error("Startup_verify.gpg is not present. Goodbye.");
+        }
+
+        // TODO: Check the startup_verify entries and validate the proper folders are in-place
     }
 
     // fire up the first world state
