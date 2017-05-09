@@ -74,11 +74,16 @@ win32 {
 }
 
 include (lib/reverse-engineering-ds.pri)
+include (lib/gas.pri)
 
 INCLUDEPATH += lib/minini_12b
 SOURCES += lib/minini_12b/minIni.c
 
 INCLUDEPATH += lib/spdlog/include
+INCLUDEPATH += lib/gas/source
 
 SOURCES += src/config.cpp
 SOURCES += src/main.cpp
+SOURCES += src/tankarchive.cpp
+SOURCES += src/directoryarchive.cpp
+SOURCES += src/masterfileindex.cpp
