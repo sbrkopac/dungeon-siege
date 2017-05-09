@@ -14,49 +14,14 @@ namespace ehb
             Config(int * argc, char * argv[]);
            ~Config();
 
-            bool getBool(const std::string & key, bool defaultValue) const;
-            float getFloat(const std::string & key, float defaultValue) const;
-            int getInt(const std::string & key, int defaultValue) const;
-            const std::string & getString(const std::string & key, const std::string & defaultValue) const;
+            static bool getBool(const std::string & key, bool defaultValue);
+            static float getFloat(const std::string & key, float defaultValue);
+            static int getInt(const std::string & key, int defaultValue);
+            static const std::string & getString(const std::string & key, const std::string & defaultValue);
 
-            void dump();
-            void dump(std::ostream & stream);
-
-        private:
-
-            std::unordered_map<std::string, bool> boolMap;
-            std::unordered_map<std::string, float> floatMap;
-            std::unordered_map<std::string, int> intMap;
-            std::unordered_map<std::string, std::string> stringMap;
+            static void dump();
+            static void dump(std::ostream & stream);
     };
-
-    inline bool Config::getBool(const std::string & key, bool defaultValue) const
-    {
-        const auto itr = boolMap.find(key);
-
-        return (itr != boolMap.end()) ? itr->second : defaultValue;
-    }
-
-    inline float Config::getFloat(const std::string & key, float defaultValue) const
-    {
-        const auto itr = floatMap.find(key);
-
-        return (itr != floatMap.end()) ? itr->second : defaultValue;
-    }
-
-    inline int Config::getInt(const std::string & key, int defaultValue) const
-    {
-        const auto itr = intMap.find(key);
-
-        return (itr != intMap.end()) ? itr->second : defaultValue;
-    }
-
-    inline const std::string & Config::getString(const std::string & key, const std::string & defaultValue) const
-    {
-        const auto itr = stringMap.find(key);
-
-        return (itr != stringMap.end()) ? itr->second : defaultValue;
-    }
 
     inline void Config::dump()
     {

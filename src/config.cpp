@@ -15,6 +15,12 @@
 
 namespace ehb
 {
+    // These were moved here so we don't have to make Config a singleton
+    static std::unordered_map<std::string, bool> boolMap;
+    static std::unordered_map<std::string, float> floatMap;
+    static std::unordered_map<std::string, int> intMap;
+    static std::unordered_map<std::string, std::string> stringMap;
+
     constexpr const char * registryKeyVec[] =
     {
         "Software\\Wow6432Node\\Microsoft\\Microsoft Games\\Dungeon Siege Legends of Aranna\\1.0",
@@ -206,6 +212,35 @@ namespace ehb
     Config::~Config()
     {
     }
+
+    bool Config::getBool(const std::string & key, bool defaultValue)
+    {
+        const auto itr = boolMap.find(key);
+
+        return (itr != boolMap.end()) ? itr->second : defaultValue;
+    }
+
+    float Config::getFloat(const std::string & key, float defaultValue)
+    {
+        const auto itr = floatMap.find(key);
+
+        return (itr != floatMap.end()) ? itr->second : defaultValue;
+    }
+
+    int Config::getInt(const std::string & key, int defaultValue)
+    {
+        const auto itr = intMap.find(key);
+
+        return (itr != intMap.end()) ? itr->second : defaultValue;
+    }
+
+    const std::string & Config::getString(const std::string & key, const std::string & defaultValue)
+    {
+        const auto itr = stringMap.find(key);
+
+        return (itr != stringMap.end()) ? itr->second : defaultValue;
+    }
+
 
     void Config::dump(std::ostream & stream)
     {
