@@ -1,6 +1,6 @@
 [submodule "lib/spdlog"]
 	path = lib/spdlog
-	url = https://github.com/gabime/spdlog
+	url = http://github.com/gabime/spdlog
 [submodule "lib/reverse-engineering-dungeon-siege"]
 	path = lib/reverse-engineering-dungeon-siege
-	url = https://github.com/glampert/reverse-engineering-dungeon-siege
+	url = http://github.com/sbrkopac/reverse-engineering-dungeon-siege
