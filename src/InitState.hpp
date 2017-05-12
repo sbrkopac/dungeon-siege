@@ -5,11 +5,12 @@
 
 namespace ehb
 {
+    class IConfig;
     class InitState final : public IGameState
     {
     public:
 
-        InitState(IGameStateMgr * gameStateMgr);
+        InitState(IGameStateMgr * gameStateMgr, IConfig * config);
 
         virtual ~InitState() = default;
 
@@ -20,9 +21,10 @@ namespace ehb
     private:
 
         IGameStateMgr * gameStateMgr;
+        IConfig * config;
     };
 
-    inline InitState::InitState(IGameStateMgr * gameStateMgr) : gameStateMgr(gameStateMgr)
+    inline InitState::InitState(IGameStateMgr * gameStateMgr, IConfig * config) : gameStateMgr(gameStateMgr), config(config)
     {
     }
 }

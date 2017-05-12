@@ -6,6 +6,7 @@ namespace ehb
 {
     void IntroState::enter()
     {
+        // TODO: cache videos in config.getString("cache-dir")
     }
 
     void IntroState::leave()
