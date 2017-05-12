@@ -1,6 +1,8 @@
 
 #include <osgGA/GUIEventAdapter>
 #include "InitState.hpp"
+#include "SimpleConfig.hpp"
+#include "Logging.hpp"
 
 namespace ehb
 {
@@ -14,6 +16,8 @@ namespace ehb
          *  - config.getString("ds-install-path") + "Maps"
          *  - dsloa ? config.getString("ds-install-path") + "DSLOA"
          */
+
+        Logging::init(config->getString("data-dir", "."));
     }
 
     void InitState::leave()
