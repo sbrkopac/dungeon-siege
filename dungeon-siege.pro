@@ -82,8 +82,11 @@ SOURCES += lib/minini_12b/minIni.c
 INCLUDEPATH += lib/spdlog/include
 INCLUDEPATH += lib/gas/source
 
-SOURCES += src/config.cpp
+SOURCES += src/EventProxy.cpp
+SOURCES += src/Game.cpp
+SOURCES += src/GameStateMgr.cpp
+SOURCES += src/InitState.cpp
+SOURCES += src/IntroState.cpp
+SOURCES += src/LogoState.cpp
+SOURCES += src/SimpleConfig.cpp
 SOURCES += src/main.cpp
-SOURCES += src/tankarchive.cpp
-SOURCES += src/directoryarchive.cpp
-SOURCES += src/masterfileindex.cpp
