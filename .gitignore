@@ -37,3 +37,4 @@ dungeon-siege.vcxproj.filters
 *.pdb
 *.opendb
 *.db
+*.user
