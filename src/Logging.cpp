@@ -5,10 +5,10 @@
 
 namespace ehb
 {    
+    std::shared_ptr <spdlog::logger> gFallbackLog = spdlog::basic_logger_mt("fallback", "fallback.log");
+
     void Logging::init(const std::string & path)
     {
-        std::cout << osgDB::getCurrentWorkingDirectory() << std::endl;
-
         // sanity check for logs folder
         if (!osgDB::fileExists(path + "/Logs"))
         {
@@ -24,7 +24,6 @@ namespace ehb
     #endif
 
     #ifdef DEBUG_LOGGING
-
         spdlog::set_level(spdlog::level::trace);
 
         std::shared_ptr<spdlog::logger> debug = spdlog::basic_logger_mt("debug", path + "/Logs/debug.log");
@@ -33,5 +32,12 @@ namespace ehb
 
         // set the global pattern... dungeon siege style
         spdlog::set_pattern("+%H:%M:%S:%e - %v");
+
+        gLoggingReady = true;
+    }
+
+    bool Logging::ready()
+    {
+        return gLoggingReady;
     }
 }
