@@ -4,6 +4,7 @@
 #include <osg/ref_ptr>
 #include <osgViewer/Viewer>
 #include "EventProxy.hpp"
+#include "FileSys.hpp"
 #include "GameStateMgr.hpp"
 #include "IGameStateProvider.hpp"
 #include "SimpleConfig.hpp"
@@ -30,5 +31,6 @@ namespace ehb
         osg::ref_ptr<EventProxy> proxy;
         GameStateMgr gameStateMgr;
         osgViewer::Viewer viewer;
+        FileSys fileSys;
     };
 }

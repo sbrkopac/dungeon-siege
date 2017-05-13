@@ -90,3 +90,7 @@ SOURCES += src/IntroState.cpp
 SOURCES += src/LogoState.cpp
 SOURCES += src/SimpleConfig.cpp
 SOURCES += src/main.cpp
+SOURCES += src/FileSys.cpp
+SOURCES += src/DirectoryArchive.cpp
+SOURCES += src/TankArchive.cpp
+SOURCES += src/Logging.cpp

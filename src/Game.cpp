@@ -21,7 +21,7 @@ namespace ehb
     {
         if (gameStateType == "InitState")
         {
-            return new InitState(gameStateMgr, &config);
+            return new InitState(gameStateMgr, &config, &fileSys);
         }
         else if (gameStateType == "IntroState")
         {
