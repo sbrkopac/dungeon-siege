@@ -4,8 +4,7 @@
 #include "IGameStateProvider.hpp"
 #include <osgGA/GUIEventAdapter>
 
-// TODO: some spdlog up in here
-#include <iostream>
+#include "Logging.hpp"
 
 namespace ehb
 {
@@ -25,13 +24,16 @@ namespace ehb
     {
         if (IGameState * state = provider->createGameState(gameStateType, this))
         {
-            // TODO: log a warning if pendingState isn't empty
+            if (pendingState != nullptr)
+            {
+                WARN_LOG("The GameStateMgr still has a pending state while transitioning to a new state");
+            }
 
             pendingState.reset(state);
         }
         else
         {
-            // TODO: log a warning that the requested state change can't happen
+            WARN_LOG("GameState [{}] is unavailable", gameStateType);
         }
     }
 
@@ -46,29 +48,41 @@ namespace ehb
                 // std::cout << "FRAME" << std::endl;
 
                 if (pendingState)
-                { std::cout << "acting on pendingState" << std::endl;
+                {
                     if (currentState)
                     {
-                        std::cout << "==========================================================================================================================" << std::endl;
-                        std::cout << "| BEGIN - WORLD STATE TRANSITION: " << "FROM" << " --> " << "TO" << std::endl;
-                        std::cout << "|" << std::endl;
+                        std::stringstream ss;
+
+                        ss << "==========================================================================================================================" << std::endl;
+                        ss << "| BEGIN - WORLD STATE TRANSITION: " << "FROM" << " --> " << "TO" << std::endl;
+                        ss << "|" << std::endl;
+
+                        INFO_LOG(ss.str());
 
                         currentState->leave();
                     }
                     else
                     {
-                        std::cout << "==========================================================================================================================" << std::endl;
-                        std::cout << "| BEGIN - WORLD STATE TRANSITION: " << "TO" << std::endl;
-                        std::cout << "|" << std::endl;
+                        std::stringstream ss;
+
+                        ss << "==========================================================================================================================" << std::endl;
+                        ss << "| BEGIN - WORLD STATE TRANSITION: " << "TO" << std::endl;
+                        ss << "|" << std::endl;
+
+                        INFO_LOG(ss.str());
                     }
 
                     currentState = std::move(pendingState);
 
                     currentState->enter();
 
-                    std::cout << "|" << std::endl;
-                    std::cout << "| END - WORLD STATE TRANSITION. State = " << "TO""" << std::endl;
-                    std::cout << "==========================================================================================================================" << std::endl;
+                    std::stringstream ss;
+
+                    ss << "|" << std::endl;
+                    ss << "| END - WORLD STATE TRANSITION. State = " << "TO""" << std::endl;
+                    ss << "==========================================================================================================================" << std::endl;
+
+                    INFO_LOG(ss.str());
                 }
             }
             break;

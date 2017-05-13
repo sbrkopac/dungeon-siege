@@ -4,6 +4,8 @@
 #include "SimpleConfig.hpp"
 #include "Logging.hpp"
 
+#include <iostream>
+
 namespace ehb
 {
     void InitState::enter()
@@ -18,6 +20,11 @@ namespace ehb
          */
 
         Logging::init(config->getString("data-dir", "."));
+        
+        INFO_LOG("DS Install Path: {}", config->getString("ds-install-path"));
+        INFO_LOG("Data Directory: {}", config->getString("data-dir"));
+        INFO_LOG("Cache Directory: {}", config->getString("cache-dir"));
+        INFO_LOG("Config Directory: {}", config->getString("config-dir"));
     }
 
     void InitState::leave()
