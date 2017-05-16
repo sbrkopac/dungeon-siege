@@ -16,7 +16,7 @@ namespace ehb
     {
     public:
 
-        Game(int argc, char * argv[]);
+        Game(int * argc, char * argv[]);
 
         virtual ~Game();
 

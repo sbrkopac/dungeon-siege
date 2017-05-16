@@ -7,6 +7,7 @@
 
 namespace ehb
 {
+    class IConfig;
     class FileSys
     {
     public:
@@ -16,7 +17,7 @@ namespace ehb
 
     public:
 
-        FileSys();
+        FileSys(int * argc, char * argv[], IConfig * config);
 
         //! Reads a file into data
         bool readFile(const std::string & filename, siege::ByteArray & data);

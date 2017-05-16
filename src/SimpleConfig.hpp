@@ -11,7 +11,7 @@ namespace ehb
     {
     public:
 
-        SimpleConfig(int argc, char * argv[]);
+        SimpleConfig(int * argc, char * argv[]);
 
         virtual ~SimpleConfig() = default;
 

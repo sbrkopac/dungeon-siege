@@ -1,6 +1,8 @@
 
 #include <osg/Timer>
+#include <osgDB/Registry>
 #include "Game.hpp"
+#include "ReadFileProxy.hpp"
 
 #include "InitState.hpp"
 #include "IntroState.hpp"
@@ -8,9 +10,13 @@
 
 namespace ehb
 {
-    Game::Game(int argc, char * argv[]) : config(argc, argv), gameStateMgr(this)
+    Game::Game(int * argc, char * argv[]) : config(argc, argv), gameStateMgr(this), fileSys(argc, argv, &config)
     {
         proxy = new EventProxy(&gameStateMgr);
+
+        // TODO: store a reference to this and then make sure you clean it up properly, if need be
+        // setup osg to properly handle nnk files
+        osgDB::Registry::instance()->setReadFileCallback(new ReadFileProxy(&fileSys));
     }
 
     Game::~Game()
@@ -97,6 +103,8 @@ namespace ehb
                 }
             }
         }
+
+        // TODO: at some point need to remove the proxy classes from osg
 
         // TODO: return a non zero if something bad happens blah blah
         return 0;

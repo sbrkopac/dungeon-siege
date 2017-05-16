@@ -94,3 +94,4 @@ SOURCES += src/FileSys.cpp
 SOURCES += src/DirectoryArchive.cpp
 SOURCES += src/TankArchive.cpp
 SOURCES += src/Logging.cpp
+SOURCES += src/ReadFileProxy.cpp

@@ -25,11 +25,11 @@ namespace ehb
         "Software\\Microsoft\\Microsoft Games\\DungeonSiegeDemo\\1.0"
     };
 
-    SimpleConfig::SimpleConfig(int argc, char * argv[])
+    SimpleConfig::SimpleConfig(int * argc, char * argv[])
     {
-        osg::ArgumentParser args(&argc, argv);
+        osg::ArgumentParser args(argc, argv);
 
-    #ifdef WIN32
+#ifdef WIN32
         { // grab the win32 specific folders to use for cache, config, and user data
             CHAR path[MAX_PATH];
 
@@ -48,7 +48,7 @@ namespace ehb
                 if (osgDB::makeDirectory(value)) stringMap["data-dir"] = value;
             }
         }
-    #else
+#else
         { // grab the freedesktop.org specific folders to use for cache, config, and user data
             xdgHandle xdg;
 
@@ -77,7 +77,7 @@ namespace ehb
 
             xdgWipeHandle(&xdg);
         }
-    #endif
+#endif
 
         { // parse all boolean values from the command line
             bool value;
@@ -104,7 +104,7 @@ namespace ehb
             else
             {
                 // search the windows registry
-            #ifdef WIN32
+#ifdef WIN32
                 for (const char * key : registryKeyVec)
                 {
                     // http://stackoverflow.com/questions/34065/how-to-read-a-value-from-the-windows-registry
@@ -123,9 +123,9 @@ namespace ehb
                         }
                     }
                 }
-            #else
+#else
                 if (const char * WINEPREFIX = std::getenv("WINEPREFIX"))
-                {
+                { std::cout << "WINEPREFIX: " << WINEPREFIX << std::endl;
                     const std::string system = osgDB::concatPaths(WINEPREFIX, "system.reg");
                     const std::string devices = osgDB::concatPaths(WINEPREFIX, "dosdevices");
 
@@ -178,8 +178,8 @@ namespace ehb
                     {
                         // TODO: print a warning out... this is weird... why no system.reg??
                     }
-                }
-            #endif
+                } else std::cout << "no wineprefix env" << std::endl;
+#endif
             }
         }
 

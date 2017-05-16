@@ -20,9 +20,16 @@ namespace ehb
 
         virtual void forEachFile(const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive = false) override;
 
+        const siege::TankFile::Header & getFileHeader() const;
+
     private:
 
         siege::TankFile tankFile;
         siege::TankFile::Reader reader;
     };
+
+    inline const siege::TankFile::Header & TankArchive::getFileHeader() const
+    {
+        return tankFile.getFileHeader();
+    }
 }
