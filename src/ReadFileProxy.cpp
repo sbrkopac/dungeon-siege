@@ -5,8 +5,7 @@
 #include <osgDB/Registry>
 #include "FileSys.hpp"
 #include "ReadFileProxy.hpp"
-
-#include <iostream>
+#include "Logging.hpp"
 
 namespace ehb
 {
@@ -141,15 +140,15 @@ namespace ehb
 
                 if (lowerCaseFileName.compare(0, 9, "namingkey") == 0)
                 {
-                    std.emplace(filename);
+                    std.emplace(filename);                    
 
-                    std::cout << "added standard naming key file " << filename << std::endl;
+                    DEBUG_LOG("Added standard naming key file {}", filename);
                 }
                 else
                 {
                     ext.emplace(filename);
 
-                    std::cout << "added extension naming key file " << filename << std::endl;
+                    DEBUG_LOG("Added extension naming key file {}", filename);
                 }
             }
         });

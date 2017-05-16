@@ -7,6 +7,7 @@
 #include "FileSys.hpp"
 #include "IConfig.hpp"
 #include "TankArchive.hpp"
+#include "Logging.hpp"
 #define DSMOD
 namespace ehb
 {
@@ -88,12 +89,11 @@ namespace ehb
             {
                 eachArchive.push_back(std::move(archive));
 
-                std::cout << "including " << filename << std::endl;
+                DEBUG_LOG("Including tank file: {}", filename);
             }
             else
             {
-                // TODO: proper logging
-                std::cout << "failed to open tank file: " << filename << std::endl;
+                DEBUG_LOG("Failed to open tank file: {}", filename);
             }
         }
 
