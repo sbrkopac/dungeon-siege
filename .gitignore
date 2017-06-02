@@ -1,3 +1,6 @@
+# Folder paths
+build/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -37,3 +40,4 @@ dungeon-siege.vcxproj.filters
 *.pdb
 *.opendb
 *.db
+*.user
