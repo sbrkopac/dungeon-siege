@@ -62,6 +62,7 @@ add_executable(ehb
     src/IntroState.cpp
     src/LogoState.cpp
     src/ReaderWriterRAW.cpp
+    src/ReaderWriterASP.cpp
     src/ReadFileProxy.cpp
     src/SimpleConfig.cpp
     src/TankArchive.cpp
