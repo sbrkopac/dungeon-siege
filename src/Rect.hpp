@@ -10,6 +10,18 @@ namespace ehb
     struct Rect
     {
         int x1, y1, x2, y2;
+
+        public:
+
+            bool contains(int x, int y) const
+            {
+                return x >= x1 && x < x2 && y >= y1 && y < y2;
+            }
+
+            bool intersects(const Rect & other) const
+            {
+                return x1 < other.x2 && x2 > other.x1 && y1 > other.y2 && y2 < other.y1;
+            }
     };
 
     struct NormalizedRect

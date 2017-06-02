@@ -15,7 +15,7 @@ namespace ehb
 
         virtual ~WidgetBody() = default;
 
-        virtual void dragWindow(int deltaX, int deltaY) override;
+        virtual void dragWidget(int deltaX, int deltaY) override;
         virtual void loadTexture(const std::string & filename, bool resize) override;
         virtual void resize(unsigned int width, unsigned int height) override;
         virtual void setNormalizedRect(float left, float right, float top, float bottom) override;

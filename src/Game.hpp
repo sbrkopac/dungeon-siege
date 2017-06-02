@@ -33,6 +33,6 @@ namespace ehb
         GameStateMgr gameStateMgr;
         osgViewer::Viewer viewer;
         FileSys fileSys;
-        Shell gui;
+        osg::ref_ptr<Shell> gui;
     };
 }

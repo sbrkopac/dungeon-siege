@@ -1,14 +1,9 @@
 
 #pragma once
 
-#include <list>
-#include <memory>
 #include <unordered_map>
-#include <osg/Camera>
 #include <osg/Group>
 #include "Widget.hpp"
-
-#include <osgViewer/Viewer>
 
 namespace osgGA
 {
@@ -54,11 +49,11 @@ namespace ehb
 namespace ehb
 {
     class FileSys;
-    class Shell
+    class Shell : public osg::Group
     {
     public:
 
-        Shell(FileSys & fileSys, osgViewer::Viewer & viewer);
+        Shell(FileSys & fileSys);
 
         void activateInterface(const std::string & path, bool show = true);
         void deactivateInterface(const std::string & name);
@@ -66,10 +61,10 @@ namespace ehb
         void showInterface(const std::string & name);
         void hideInterface(const std::string & name);
 
-        bool doWidgetsOverlap(const Widget * widget1, const Widget * widget2) const;
-        bool doWidgetsOverlap(const std::string & widget1, const std::string & interface1, const std::string & widget2, const std::string & interface2) const;
+        bool doWidgetsOverlap(const Widget * widget1, const Widget * widget2);
+        bool doWidgetsOverlap(const std::string & widget1, const std::string & interface1, const std::string & widget2, const std::string & interface2);
 
-        Widget * findWidget(const std::string & name, const std::string & interface) const;
+        Widget * findWidget(const std::string & name, const std::string & interface);
 
         void shiftGroup(const std::string & interface, const std::string & group, int deltaX, int deltaY);
         void shiftInterface(const std::string & name, int deltaX, int deltaY);
@@ -78,24 +73,17 @@ namespace ehb
 
         bool handle(const osgGA::GUIEventAdapter & event, osgGA::GUIActionAdapter & action);
 
-        void blah(osgViewer::Viewer & viewer);
-
     private:
 
         FileSys & fileSys;
 
-        osg::ref_ptr<osg::Camera> camera;
-
-        osg::ref_ptr<osg::Group> group;
-        std::list<Widget *> eachWidget;
         unsigned int screenWidth = 0, screenHeight = 0;
 
     public:
-        std::list<Widget *> dirtyList;
         std::unordered_map<std::string, std::string> ctrlArt;
     };
 
-    inline bool Shell::doWidgetsOverlap(const std::string & widget1, const std::string & interface1, const std::string & widget2, const std::string & interface2) const
+    inline bool Shell::doWidgetsOverlap(const std::string & widget1, const std::string & interface1, const std::string & widget2, const std::string & interface2)
     {
         return doWidgetsOverlap(findWidget(widget1, interface1), findWidget(widget2, interface2));
     }

@@ -14,9 +14,9 @@
 
 namespace ehb
 {
-    Game::Game(IConfig & config) : config(config), gameStateMgr(this), fileSys(config), gui(fileSys, viewer)
+    Game::Game(IConfig & config) : config(config), gameStateMgr(this), fileSys(config), gui(new Shell(fileSys))
     {
-        proxy = new EventProxy(gameStateMgr, gui);
+        proxy = new EventProxy(gameStateMgr, *gui);
 
         // TODO: store a reference to this and then make sure you clean it up properly, if need be
         // setup osg to properly handle nnk files
@@ -35,7 +35,7 @@ namespace ehb
         }
         else if (gameStateType == "IntroState")
         {
-            return new IntroState(gameStateMgr, gui);
+            return new IntroState(gameStateMgr, *gui);
         }
         else if (gameStateType == "LogoState")
         {
@@ -85,7 +85,29 @@ namespace ehb
 
         const float maxfps = static_cast<float>(config.getInt("maxfps", -1));
 
-        gui.blah(viewer);
+        { // create a camera to set up the projection and model view matrices, and the subgraph to draw in the HUD
+            osg::Camera * camera = new osg::Camera;
+
+            // set the projection matrix
+            camera->setProjectionMatrix(osg::Matrix::ortho2D(0, 640, 0, 480));
+
+            // set the view matrix
+            camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+            camera->setViewMatrix(osg::Matrix::identity());
+
+            // only clear the depth buffer
+            camera->setClearMask(GL_DEPTH_BUFFER_BIT);
+
+            // draw subgraph after main camera view.
+            camera->setRenderOrder(osg::Camera::POST_RENDER);
+
+            // we don't want the camera to grab event focus from the viewers main camera(s).
+            camera->setAllowEventFocus(false);
+
+            camera->addChild(gui);
+
+            viewer.setSceneData(camera);
+        }
 
         while (!viewer.done())
         {

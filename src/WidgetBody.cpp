@@ -63,7 +63,7 @@ namespace ehb
         getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
     }
 
-    void WidgetBody::dragWindow(int deltaX, int deltaY)
+    void WidgetBody::dragWidget(int deltaX, int deltaY)
     {
         updateVertexArray();
     }
@@ -139,8 +139,24 @@ namespace ehb
         updateVertexArray();
     }
 
+#if 0
+    bool calculateVisibility(bool isVisible, bool isHidden, /* texture, */ bool backgroundFill)
+    {
+        return (isVisible && !isHidden && (backgroundFill /* || texture */);
+    }
+#endif
+
     void WidgetBody::setVisible(bool value)
     {
+        // TODO: determine all criteria on whether this should be shown or not
+        if (value == false) // !widget.isVisible() || widget.isHidden() || !widget.hasBackgroundFill()
+        {
+            // setNodeMask(~0);
+        }
+        else if (widget.isVisible() && !widget.isHidden() && !widget.hasBackgroundFill())
+        {
+            // setNodeMask(0xffffffff);
+        }
     }
 
     void WidgetBody::setZ(float)

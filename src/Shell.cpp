@@ -4,9 +4,6 @@
 #include "FileSys.hpp"
 #include "Shell.hpp"
 
-#include <cstdlib>
-#include <ctime>
-
 namespace ehb
 {
     bool fromString(const std::string & value, UI_CONTROL_TYPE & result)
@@ -77,12 +74,10 @@ namespace ehb
 namespace ehb
 {
 
-    Shell::Shell(FileSys & fileSys, osgViewer::Viewer & viewer) : fileSys(fileSys), camera(new osg::Camera), group(new osg::Group)
+    Shell::Shell(FileSys & fileSys) : fileSys(fileSys)
     {
         // turn lighting off for the text and disable depth test to ensure it's always ontop.
-        group->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
-        srand(static_cast<unsigned>(time(0)));
+        getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
         screenWidth = 640;
         screenHeight = 480;
@@ -104,33 +99,6 @@ namespace ehb
         {
             // spdlog::get("log")->info("common_control_art: {} = {}", entry.first, entry.second);
         }
-    }
-
-    void Shell::blah(osgViewer::Viewer & viewer)
-    {
-        // create a camera to set up the projection and model view matrices, and the subgraph to draw in the HUD
-
-        // set the projection matrix
-        camera->setProjectionMatrix(osg::Matrix::ortho2D(0, 640, 0, 480));
-
-        // set the view matrix
-        camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-        camera->setViewMatrix(osg::Matrix::identity());
-
-        // only clear the depth buffer
-        camera->setClearMask(GL_DEPTH_BUFFER_BIT);
-
-        // draw subgraph after main camera view.
-        camera->setRenderOrder(osg::Camera::POST_RENDER);
-
-        // we don't want the camera to grab event focus from the viewers main camera(s).
-        camera->setAllowEventFocus(false);
-
-        camera->addChild(group);
-
-
-
-        viewer.setSceneData(camera);
     }
 
     void Shell::activateInterface(const std::string & path, bool show)
@@ -182,6 +150,23 @@ namespace ehb
                      * - rollover_help
                      * - wrap_mode
                      */
+
+                    /* properties for widgets created from a .gas file
+                     * - interface parent
+                     * - name
+                     * - intended_resolution_width, intended_resolution_height
+                     *
+                     * - draw_order
+                     * - group
+                     * - center_x, center_y
+                     * - stretch_x, stretch_y
+                     * - is_*_anchor
+                     * - *_anchor
+                     * - max_width, max_height
+                     */
+
+                    // so far only widgets loaded from gas files require knowing the screen width and height
+                    // this may change when i figure out the normalize resize stuff
 
                     Rect rect;
 
@@ -245,9 +230,7 @@ namespace ehb
                     widget->createOsgView(geode);
 #endif
 
-                    group->addChild(widget);
-
-                    eachWidget.push_back(widget);
+                    addChild(widget);
                 }
                 else
                 {
@@ -261,48 +244,58 @@ namespace ehb
             log->error("failed to read {} from the file system", actualPath);
         }
 
-        eachWidget.sort([](const Widget * lhs, const Widget * rhs)
+        // this is the only place i want to directly interact with the osg::Group::_children member variable
+        std::sort(_children.begin(), _children.end(), [](const osg::ref_ptr<osg::Node> & lhs, const osg::ref_ptr<osg::Node> & rhs)
         {
-            return lhs->getDrawOrder() > rhs->getDrawOrder();
+            return static_cast<Widget &>(*lhs).getDrawOrder() > static_cast<Widget &>(*rhs).getDrawOrder();
         });
 
-        double i = 0;
-        const double count = eachWidget.size();
-
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
-            const double z = i++ / count;
+            Widget * widget = static_cast<Widget *>(getChild(i));
 
-            widget->setZ(-z - 1.f);
+            const double zValue = static_cast<double>(i) / static_cast<double>(getNumChildren());
+
+            widget->setZ(-(1 + zValue));
         }
     }
 
     void Shell::deactivateInterface(const std::string & name)
     {
-        // TODO: remove from geode
-        /*
-        for (auto itr = eachWidget.begin(); itr != eachWidget.end(); ++itr)
+        // yarp, this just happened
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
-            if ((*itr)->getInterfaceParent() == name)
+            unsigned int count = 0;
+
+            while (true)
             {
-                // (*itr)->removeFrom(geode);
-                itr = eachWidget.erase(itr);
+                const Widget * widget = static_cast<const Widget *>(getChild(i + count));
+
+                if (widget->getInterfaceParent() == name)
+                {
+                    count++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (count)
+            {
+                removeChild(i, count);
             }
         }
-        */
-
-        eachWidget.remove_if([name](const Widget * widget)
-        {
-            return widget->getInterfaceParent() == name;
-        });
     }
 
     void Shell::showInterface(const std::string & name)
     {
         // TODO: figure out if this is the "UIWidget::Hidden" property
 
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
+            Widget * widget = static_cast<Widget *>(getChild(i));
+
             if (widget->getInterfaceParent() == name)
             {
                 widget->setHidden(false);
@@ -314,8 +307,10 @@ namespace ehb
     {
         // TODO: figure out if this is the "UIWidget::Hidden" property
 
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
+            Widget * widget = static_cast<Widget *>(getChild(i));
+
             if (widget->getInterfaceParent() == name)
             {
                 widget->setHidden(true);
@@ -323,7 +318,7 @@ namespace ehb
         }
     }
 
-    bool Shell::doWidgetsOverlap(const Widget * widget1, const Widget * widget2) const
+    bool Shell::doWidgetsOverlap(const Widget * widget1, const Widget * widget2)
     {
         if (!widget1) return false;
         if (!widget2) return false;
@@ -332,10 +327,12 @@ namespace ehb
         return widget1->getRect().x1 < widget2->getRect().x2 && widget1->getRect().x2 > widget2->getRect().x1 && widget1->getRect().y1 > widget2->getRect().y2 && widget1->getRect().y2 < widget2->getRect().y1;
     }
 
-    Widget * Shell::findWidget(const std::string & name, const std::string & interface) const
+    Widget * Shell::findWidget(const std::string & name, const std::string & interface)
     {
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
+            Widget * widget = static_cast<Widget *>(getChild(i));
+
             if (widget->getName() == name && widget->getInterfaceParent() == interface)
             {
                 return widget;
@@ -347,32 +344,33 @@ namespace ehb
 
     void Shell::shiftGroup(const std::string & interface, const std::string & group, int deltaX, int deltaY)
     {
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
+            Widget * widget = static_cast<Widget *>(getChild(i));
+
             if (widget->getGroup() == group && widget->getInterfaceParent() == interface)
             {
-                // TODO: widget->drag(deltaX, deltaY); ?
-                // widget->shiftX += deltaX;
-                // widget->shiftY += deltaY;
+                widget->dragWidget(deltaX, deltaY);
             }
         }
     }
 
     void Shell::shiftInterface(const std::string & name, int deltaX, int deltaY)
     {
-        for (Widget * widget : eachWidget)
+        for (unsigned int i = 0; i < getNumChildren(); i++)
         {
+            Widget * widget = static_cast<Widget *>(getChild(i));
+
             if (widget->getInterfaceParent() == name)
             {
-                // TODO: widget->drag(deltaX, deltaY); ?
-                // widget->shiftX += deltaX;
-                // widget->shiftY += deltaY;
+                widget->dragWidget(deltaX, deltaY);
             }
         }
     }
 
     Widget * Shell::createDefaultWidgetOfType(const std::string & type)
     {
+        // TODO: addChild right in here?
         if (type == "window") return new Widget;
         else if (type == "button") return new Widget;
         else if (type == "checkbox") return new Widget;
@@ -435,8 +433,10 @@ namespace ehb
         {
             case osgGA::GUIEventAdapter::PUSH:
             {
-                for (Widget * widget : eachWidget)
+                for (unsigned int i = 0; i < getNumChildren(); i++)
                 {
+                    Widget * widget = static_cast<Widget *>(getChild(i));
+
                     if (widget->isPassThrough() != true && event.getX() >= widget->getRect().x1 && event.getX() <= widget->getRect().x2 && event.getY() >= widget->getRect().y1 && event.getY() <= widget->getRect().y2)
                     {
                         log->info("PUSH on {} @ {}, {}", widget->getName(), event.getX(), event.getY());
@@ -448,8 +448,10 @@ namespace ehb
 
             case osgGA::GUIEventAdapter::RELEASE:
             {
-                for (Widget * widget : eachWidget)
+                for (unsigned int i = 0; i < getNumChildren(); i++)
                 {
+                    Widget * widget = static_cast<Widget *>(getChild(i));
+
                     if (widget->isPassThrough() != true && event.getX() >= widget->getRect().x1 && event.getX() <= widget->getRect().x2 && event.getY() >= widget->getRect().y1 && event.getY() <= widget->getRect().y2)
                     {
                         log->info("RELEASE on {} @ {}, {}", widget->getName(), event.getX(), event.getY());
@@ -496,10 +498,12 @@ namespace ehb
                     //camera->setViewport(0, 0, screenWidth, screenHeight);
 
                     // let each widget know the screen has been resized
-                    for (Widget * widget : eachWidget)
+                    for (unsigned int i = 0; i < getNumChildren(); i++)
                     {
+                        Widget * widget = static_cast<Widget *>(getChild(i));
                         // widget->screenSizeChanged(screenWidth, screenHeight);
                     }
+
                 }
                 else
                 {
@@ -510,8 +514,10 @@ namespace ehb
 
             case osgGA::GUIEventAdapter::SCROLL:
             {
-                for (Widget * widget : eachWidget)
+                for (unsigned int i = 0; i < getNumChildren(); i++)
                 {
+                    Widget * widget = static_cast<Widget *>(getChild(i));
+
                     if (widget->isPassThrough() != true && event.getX() >= widget->getRect().x1 && event.getX() <= widget->getRect().x2 && event.getY() >= widget->getRect().y1 && event.getY() <= widget->getRect().y2)
                     {
                         if (event.getScrollingMotion() == osgGA::GUIEventAdapter::SCROLL_UP)

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <optional.hpp>
 #include <osg/Geode>
 #include "Rect.hpp"
 
@@ -18,18 +19,22 @@ namespace ehb
         // widget methods
         virtual void createCommonCtrl(const std::string & commonTemplate);
 
-        void dragWindow(int deltaX, int deltaY);
+        void dragWidget(int deltaX, int deltaY);
 
         void loadTexture(const std::string & filename, bool resize);
 
         // bool processAction(UI_ACTION, const string &);
         // bool receiveMessage(const UIMessage &);
 
+        // TODO: figure out what ds does in this situation when stretchX or stretchY is set to true
         void resize(unsigned int width, unsigned int height);
 
         void setNormalizedRect(float left, float right, float top, float bottom);
 
+        // TODO: figure out what ds does in this situation when centerX or centerY is set to true
         void setRect(int left, int right, int top, int bottom);
+
+        void setScreenSize(unsigned int width, unsigned int height); // TODO: this should only be callable by Shell...?
 
         void setUVRect(float left, float right, float top, float bottom);
 
@@ -37,13 +42,13 @@ namespace ehb
         float getAlpha() const;
         void setAlpha(float value);
 
-        bool getBackgroundFill() const;
+        bool hasBackgroundFill() const;
         void setBackgroundFill(bool value);
 
         // TODO: use the color class?
         void setBackgroundColor(float r, float g, float b, float a = 1.f);
 
-        bool getBorder() const;
+        bool hasBorder() const;
         void setBorder(bool value);
 
         // TODO: use the color class?
@@ -57,19 +62,22 @@ namespace ehb
         const std::string & getCommonTemplate() const;
 
         int getDrawOrder() const;
-        void setDrawOrder(int value); // TODO: remove this method, don't want people changing this? or if they can, then has to make Shell recalculate z of everything
+        void setDrawOrder(int value); // TODO: this property should only be set via .gas template loading
 
         const std::string & getGroup() const;
-        void setGroup(const std::string & value); // TODO: don't have this here?
+        void setGroup(const std::string & value); // TODO: this property should only be set via .gas template loading...?
 
-        bool getHidden() const;
+        // TODO: figure out what ds does in the situation when stretchY is set to true
+        unsigned int getHeight() const;
+
+        bool isHidden() const;
         void setHidden(bool value);
 
-        const std::string & getName() const;
-        void setName(const std::string & value); // TODO: don't have this here
-
         const std::string & getInterfaceParent() const;
-        void setInterfaceParent(const std::string & value); // TODO: definitely don't have this here
+        void setInterfaceParent(const std::string & value); // TODO: this property should only be set via .gas template loading
+
+        const std::string & getName() const;
+        void setName(const std::string & value); // TODO: this property should only be set via .gas template loading...?
 
         const NormalizedRect & getNormalizedRect() const;
 
@@ -77,27 +85,33 @@ namespace ehb
         void setNormalizeResize(bool value);
 
         bool isPassThrough() const;
-        void setPassThrough(bool value); // TODO: do something with this...
+        void setPassThrough(bool value); // TODO: this property should only be set via .gas template loading...?
 
+        // TODO: figure out if ds returns rect or rectCache
         const Rect & getRect() const;
 
         float getScale() const;
         void setScale(float value);
 
-        bool getTopmost() const;
+        bool isTopmost() const;
         void setTopmost(bool value);
 
         const NormalizedRect & getUVRect() const;
 
-        bool getVisible() const;
+        bool isVisible() const;
         void setVisible(bool value);
 
+        // TODO: figure out what ds does in the situation when stretchX is set to true
+        unsigned int getWidth() const;
+
         float getZ() const;
-        void setZ(float value);
+        void setZ(float value); // TODO: this property should only be set by Shell
 
     private:
 
-        // using nonstd::optional;
+        void updateCache();
+
+    private:
 
         float alpha = 1.f;
         bool backgroundFill = false;
@@ -105,23 +119,32 @@ namespace ehb
         bool border = false;
         struct { float r, g, b, a; } borderColor;
         int borderPadding = 0;
+        nonstd::optional<int> bottomAnchor;
+        bool centerX = false, centerY = false;
         std::string commonTemplate;
         int drawOrder = 0;
         std::string group;
         bool hidden = false;
+        nonstd::optional<unsigned int> intendedResolutionHeight, intendedResolutionWidth;
         std::string interfaceParent;
+        nonstd::optional<int> leftAnchor;
+        nonstd::optional<unsigned int> maxHeight, maxWidth;
         std::string name;
         NormalizedRect normalizedRect;
         bool normalizeResize = false;
         bool passThrough = false;
-        Rect rect;
+        Rect rect; // rect of the widget
+        Rect rectCache; // calculated rect of the widget factoring in *everything* (anchors, centering, intended interface resolution, max sizes, normalization, scaling, screen size, shifting, and stretching)
+        nonstd::optional<int> rightAnchor;
         float scale = 1.f;
+        unsigned int screenHeight = 0, screenWidth = 0;
+        int shiftX = 0, shiftY = 0;
+        bool stretchX = false, stretchY = false;
         bool topmost = false;
+        nonstd::optional<int> topAnchor;
         NormalizedRect uvrect;
         bool visible = true;
         float z = -1.f;
-
-        // TODO: store the original rect value from gas file
 
     };
 
@@ -130,12 +153,12 @@ namespace ehb
         return alpha;
     }
 
-    inline bool Widget::getBackgroundFill() const
+    inline bool Widget::hasBackgroundFill() const
     {
         return backgroundFill;
     }
 
-    inline bool Widget::getBorder() const
+    inline bool Widget::hasBorder() const
     {
         return border;
     }
@@ -185,7 +208,12 @@ namespace ehb
         name = value;
     }
 
-    inline bool Widget::getHidden() const
+    inline unsigned int Widget::getHeight() const
+    {
+        return rectCache.y2 > rectCache.y1 ? static_cast<unsigned int>(rectCache.y2 - rectCache.y1) : 0;
+    }
+
+    inline bool Widget::isHidden() const
     {
         return hidden;
     }
@@ -222,7 +250,7 @@ namespace ehb
 
     inline const Rect & Widget::getRect() const
     {
-        return rect;
+        return rectCache;
     }
 
     inline float Widget::getScale() const
@@ -230,7 +258,7 @@ namespace ehb
         return scale;
     }
 
-    inline bool Widget::getTopmost() const
+    inline bool Widget::isTopmost() const
     {
         return topmost;
     }
@@ -240,9 +268,14 @@ namespace ehb
         return uvrect;
     }
 
-    inline bool Widget::getVisible() const
+    inline bool Widget::isVisible() const
     {
         return visible;
+    }
+
+    inline unsigned int Widget::getWidth() const
+    {
+        return rectCache.x2 > rectCache.x1 ? static_cast<unsigned int>(rectCache.x2 - rectCache.x1) : 0;
     }
 
     inline float Widget::getZ() const
@@ -256,147 +289,9 @@ namespace ehb
 {
     class Widget
     {
-        // TODO: no thank you...
-        friend class Shell;
-    public:
-
-        Widget() {}
-
-        virtual ~Widget() = default;
-
-        float getAlpha() const;
-        // void setAlpha(float value);
-
-        const std::string & getName() const;
-        const std::string & getGroup() const;
-        const std::string & getInterfaceParent() const;
-
-        unsigned int getDrawOrder() const;
-
-        bool isPassThrough() const;
-
-        // TODO: figure out what ds does in the situation when stretchX or stretchY is set to true
-        unsigned int getWidth() const;
-        unsigned int getHeight() const;
-
-        bool isCommonControl() const;
-        bool isHidden() const;
-        bool isVisible() const;
-
-        // void setUVRect(float left, float right, float top, float bottom);
-
-        virtual void createCommonCtrl(const std::string & sTemplate);
-
-        // TODO: figure out what ds does in this situation when stretchX or stretchY is set to true
-        // void resize(unsigned int width, unsigned int height);
-
-        // TODO: figure out what ds does in this situation when centerX or centerY is set to true
-        // void setRect(int left, int right, int top, int bottom /*, bool bAnimation */);
-
-        void screenSizeChanged(unsigned int screenWidth, unsigned int screenHeight);
-
-    private:
-
-        // only to be called by Shell...?
-        virtual void createOsgView(osg::Geode * geode);
-        virtual void updateOsgView(float z);
-        virtual void removeOsgView(osg::Geode * geode);
-
     protected:
 
-        float alpha = 1.0f;
-        unsigned int drawOrder = 0;
-        std::string name;
-        std::string group;
-        std::string interfaceParent;
-        Rect originalRect, rect;
-        NormalizedRect uvrect;
-
-        // std::optional<unsigned int> backgroundColor;
-        unsigned int backgroundColor;
-        bool backgroundFill = false;
-        // std::optional<unsigned int> borderColor;
-        bool border = false;
-        unsigned int borderColor;
-
-        bool passThrough = false;
-        bool hidden = false;
-        bool visible = true;
-
-        // std::optional<std::string> commonTemplate;
-        bool commonControl = false;
-        std::string commonTemplate;
-
-        std::string texture;
-
-        bool centerX = false, centerY = false, stretchX = false, stretchY = false;
-        // std::optional<int> leftAnchor, rightAnchor, topAnchor, bottomAnchor;
-        bool isLeftAnchor = false, isRightAnchor = false, isTopAnchor = false, isBottomAnchor = false;
-        int leftAnchor, rightAnchor, topAnchor, bottomAnchor;
-
-        // std::optional<unsigned int> maxWidth, maxHeight;
-        int maxWidth = -1, maxHeight = -1;
-        int screenWidth = -1, screenHeight = -1;
-        int intendedResolutionWidth = -1, intendedResolutionHeight = -1;
-
         int shiftX = 0, shiftY = 0;
-
-        std::vector<osg::Geometry *> view;
     };
-
-    inline float Widget::getAlpha() const
-    {
-        return alpha;
-    }
-
-    inline const std::string & Widget::getName() const
-    {
-        return name;
-    }
-
-    inline const std::string & Widget::getGroup() const
-    {
-        return group;
-    }
-
-    inline const std::string & Widget::getInterfaceParent() const
-    {
-        return interfaceParent;
-    }
-
-    inline unsigned int Widget::getDrawOrder() const
-    {
-        return drawOrder;
-    }
-
-    inline bool Widget::isPassThrough() const
-    {
-        return passThrough;
-    }
-
-    inline unsigned int Widget::getWidth() const
-    {
-        return rect.x2 > rect.x1 ? static_cast<unsigned int>(rect.x2 - rect.x1) : 0;
-    }
-
-    inline unsigned int Widget::getHeight() const
-    {
-        return rect.y2 > rect.y1 ? static_cast<unsigned int>(rect.y2 - rect.y1) : 0;
-    }
-
-    inline bool Widget::isCommonControl() const
-    {
-        return commonControl;
-    }
-
-    inline bool Widget::isHidden() const
-    {
-        return hidden;
-    }
-
-    inline bool Widget::isVisible() const
-    {
-        return visible;
-    }
 }
 #endif

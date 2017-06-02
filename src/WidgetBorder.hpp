@@ -15,7 +15,7 @@ namespace ehb
 
         virtual ~WidgetBorder() = default;
 
-        virtual void dragWindow(int deltaX, int deltaY) override;
+        virtual void dragWidget(int deltaX, int deltaY) override;
         virtual void resize(unsigned int width, unsigned int height) override;
         virtual void setNormalizedRect(float left, float right, float top, float bottom) override;
         virtual void setRect(int left, int right, int top, int bottom) override;

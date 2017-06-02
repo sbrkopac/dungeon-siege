@@ -48,7 +48,7 @@ namespace ehb
         // TODO: getOrCreateStateSet()->setAttribute(new osg::LineWidth(widget.getBorderPadding()));
     }
 
-    void WidgetBorder::dragWindow(int deltaX, int deltaY)
+    void WidgetBorder::dragWidget(int deltaX, int deltaY)
     {
         updateVertexArray();
     }

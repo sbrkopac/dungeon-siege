@@ -37,9 +37,6 @@
 
 }
 
-%option header-file="gas.l.hpp"
-%option outfile="gas.l.cpp"
-
 %option bison-bridge
 %option never-interactive
 %option nounistd

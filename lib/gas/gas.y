@@ -48,8 +48,6 @@
 %define api.pure true
 %define api.value.type {std::string}
 
-%defines "gas.y.hpp"
-%output "gas.y.cpp"
 %lex-param {void * scanner}
 %parse-param {void * scanner}
 %parse-param {ehb::Node * node}

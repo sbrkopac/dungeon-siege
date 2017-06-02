@@ -13,7 +13,7 @@ namespace ehb
 
         // widget methods
         virtual void createCommonCtrl(const std::string & commonTemplate) {}
-        virtual void dragWindow(int deltaX, int deltaY) {}
+        virtual void dragWidget(int deltaX, int deltaY) {}
         virtual void loadTexture(const std::string & filename, bool resize) {}
         // virtual bool processAction(UI_ACTION, const string &) {}
         // virtual bool receiveMessage(const UIMessage &) {}
