@@ -16,11 +16,6 @@ class ReaderWriterASP : public osgDB::ReaderWriter
 
         virtual const char * className() const override;
 
-        // read
-        virtual ReadResult readObject(const std::string & file, const Options * options = nullptr) const override;
-
-        virtual ReadResult readObject(std::istream & stream, const Options * options = nullptr) const override;
-
         virtual ReadResult readNode(std::istream & stream, const Options * options = nullptr) const override;
 
 };
@@ -33,6 +28,11 @@ ReaderWriterASP::ReaderWriterASP()
 const char * ReaderWriterASP::className() const
 {
     return "Dungeon Siege ASP Reader/Writer";
+}
+
+osgDB::ReaderWriter::ReadResult ReaderWriterASP::readNode(std::istream & stream, const Options * options) const
+{
+    return osgDB::ReaderWriter::ReadResult::FILE_NOT_HANDLED;
 }
 
 REGISTER_OSGPLUGIN(asp, ReaderWriterASP);

@@ -232,7 +232,7 @@ namespace ehb
     {
         std::string actualFileName = prepareFilePath(filename);
 
-        // std::cout << "ACTUALFILENAME = " << actualFileName << std::endl;
+        std::cout << "ACTUALFILENAME = " << actualFileName << std::endl;
 
         osgDB::ReaderWriter::ReadResult result = osgDB::ReaderWriter::ReadResult::FILE_NOT_FOUND;
 

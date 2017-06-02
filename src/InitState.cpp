@@ -120,7 +120,7 @@ namespace ehb
 
         if (event.getEventType() == osgGA::GUIEventAdapter::FRAME)
         {
-            gameStateMgr.request("IntroState");
+            gameStateMgr.request("BrkopacState");
 
             /*
             if (config->getBool("intro"))

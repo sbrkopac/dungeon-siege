@@ -18,6 +18,14 @@ namespace ehb
         auto log = spdlog::get("log");
 
         log->info("this is the BrkopacState");
+
+        auto farmgirl = osgDB::readNodeFile("m_c_gah_fg_pos_a1.asp");
+        farmgirl->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+
+        auto scene = new osg::Group;
+        scene->addChild(farmgirl);
+
+        viewer.setSceneData(scene);
     }
 
     void BrkopacState::leave()
