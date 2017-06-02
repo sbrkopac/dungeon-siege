@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2016-2017 aaron andersen, sam brkopac
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
@@ -27,10 +27,10 @@
 
 %code provides {
 
-    extern void gserror (void * yyscanner, siege::Node * node, const char * msg);
+    extern void gserror (void * yyscanner, ehb::Node * node, const char * msg);
 
-    int gsparse_file (const char * filename, siege::Node * node);
-    int gsparse_string (const char * data, siege::Node * node);
+    int gsparse_file (const char * filename, ehb::Node * node);
+    int gsparse_string (const char * data, ehb::Node * node);
 
     // this some serious black magic for VS due to lack of c++11 relaxed union support
     #undef GSSTYPE_IS_TRIVIAL
@@ -52,7 +52,7 @@
 %output "gas.y.cpp"
 %lex-param {void * scanner}
 %parse-param {void * scanner}
-%parse-param {siege::Node * node}
+%parse-param {ehb::Node * node}
 
 %token Expression "expression"
 %token Identifier "identifier"
@@ -99,7 +99,17 @@ attribute
     : identifier '=' expression_statement ';' { node->appendValue($1, $3); }
     | type_id identifier '=' expression_statement ';' {
 
-        node->appendValue($2, $4);
+        if ($1 == "x") {
+            try {
+                auto value = std::stoll($4, nullptr, 16);
+                node->appendValue($2, std::to_string(value));
+            } catch (std::exception & e) {
+                // TODO: log a warning
+                node->appendValue($2, $4);
+            }
+        } else {
+            node->appendValue($2, $4);
+        }
 
         // TODO: ensure these values are interpreted properly...?
         if ($1 == "b") {
@@ -148,14 +158,14 @@ identifier
 #include <iostream>
 #include "gas.l.hpp"
 
-void gserror(void * yyscanner, siege::Node * node, const char * msg)
+void gserror(void * yyscanner, ehb::Node * node, const char * msg)
 {
     // TODO: possibly add a getLastError function to the Gas class?
     // either way, stop spamming cout
     std::cout << "yyerror: " << msg << " (" << (node ? node->name() : "") << ")" << std::endl;
 }
 
-int gsparse_file(const char * filename, siege::Node * node)
+int gsparse_file(const char * filename, ehb::Node * node)
 {
     int result;
 
@@ -178,7 +188,7 @@ int gsparse_file(const char * filename, siege::Node * node)
     return result == 0;
 }
 
-int gsparse_string (const char * data, siege::Node * node)
+int gsparse_string (const char * data, ehb::Node * node)
 {
     int result;
 

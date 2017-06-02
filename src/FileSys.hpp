@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "gas.hpp"
 #include "IArchive.hpp"
 
 namespace ehb
@@ -17,7 +18,7 @@ namespace ehb
 
     public:
 
-        FileSys(int * argc, char * argv[], IConfig * config);
+        FileSys(IConfig & config);
 
         //! Reads a file into data
         bool readFile(const std::string & filename, siege::ByteArray & data);
@@ -25,16 +26,11 @@ namespace ehb
         //! reads a file into a stringstream
         bool readFile(const std::string & filename, std::stringstream & stream);
 
+        //! reads a gas file
+        bool readFile(const std::string & filename, Gas & doc);
+
         //! Iterate over each file in a specific directory with the option the recurse
         void forEachFile(const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive = false);
-
-#if 0
-        //! Check if a file exists
-        bool exists(const std::string & filename);
-
-        //! Reads a gas file into gas
-        bool readGasFile(const std::string & filename, siege::Gas & gas);
-#endif
 
     private:
 
@@ -62,6 +58,21 @@ namespace ehb
             if (archive->readFile(filename, stream))
             {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    inline bool FileSys::readFile(const std::string & filename, Gas & doc)
+    {
+        for (const auto & archive : eachArchive)
+        {
+            std::stringstream stream;
+
+            if (archive->readFile(filename, stream))
+            {
+                return doc.load(stream);
             }
         }
 

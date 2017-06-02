@@ -5,11 +5,12 @@
 
 namespace ehb
 {
+    class Shell;
     class IntroState final : public IGameState
     {
     public:
 
-        IntroState(IGameStateMgr * gameStateMgr);
+        IntroState(IGameStateMgr & gameStateMgr, Shell & gui);
 
         virtual ~IntroState() = default;
 
@@ -19,10 +20,11 @@ namespace ehb
 
     private:
 
-        IGameStateMgr * gameStateMgr;
+        IGameStateMgr & gameStateMgr;
+        Shell & gui;
     };
 
-    inline IntroState::IntroState(IGameStateMgr * gameStateMgr) : gameStateMgr(gameStateMgr)
+    inline IntroState::IntroState(IGameStateMgr & gameStateMgr, Shell & gui) : gameStateMgr(gameStateMgr), gui(gui)
     {
     }
 }

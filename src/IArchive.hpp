@@ -19,6 +19,8 @@ namespace ehb
 
         virtual void close() = 0;
 
+        virtual const std::string & getFileName() const = 0;
+
         virtual bool readFile(const std::string & filename, siege::ByteArray & data) = 0;
 
         virtual void forEachFile(const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive = false) = 0;

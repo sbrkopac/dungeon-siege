@@ -76,15 +76,15 @@ typedef std::string GSSTYPE;
 
 
 
-int gsparse (void * scanner, siege::Node * node);
+int gsparse (void * scanner, ehb::Node * node);
 /* "%code provides" blocks.  */
 #line 28 "gas.y" /* yacc.c:1909  */
 
 
-    extern void gserror (void * yyscanner, siege::Node * node, const char * msg);
+    extern void gserror (void * yyscanner, ehb::Node * node, const char * msg);
 
-    int gsparse_file (const char * filename, siege::Node * node);
-    int gsparse_string (const char * data, siege::Node * node);
+    int gsparse_file (const char * filename, ehb::Node * node);
+    int gsparse_string (const char * data, ehb::Node * node);
 
     // this some serious black magic for VS due to lack of c++11 relaxed union support
     #undef GSSTYPE_IS_TRIVIAL

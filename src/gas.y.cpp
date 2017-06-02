@@ -136,15 +136,15 @@ typedef std::string GSSTYPE;
 
 
 
-int gsparse (void * scanner, siege::Node * node);
+int gsparse (void * scanner, ehb::Node * node);
 /* "%code provides" blocks.  */
 #line 28 "gas.y" /* yacc.c:355  */
 
 
-    extern void gserror (void * yyscanner, siege::Node * node, const char * msg);
+    extern void gserror (void * yyscanner, ehb::Node * node, const char * msg);
 
-    int gsparse_file (const char * filename, siege::Node * node);
-    int gsparse_string (const char * data, siege::Node * node);
+    int gsparse_file (const char * filename, ehb::Node * node);
+    int gsparse_string (const char * data, ehb::Node * node);
 
     // this some serious black magic for VS due to lack of c++11 relaxed union support
     #undef GSSTYPE_IS_TRIVIAL
@@ -463,8 +463,8 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    65,    65,    69,    73,    74,    75,    83,    85,    89,
-      90,    94,    95,    99,   100,   117,   121,   122,   125,   127,
-     138,   142,   143
+      90,    94,    95,    99,   100,   127,   131,   132,   135,   137,
+     148,   152,   153
 };
 #endif
 
@@ -660,7 +660,7 @@ do {                                                                      \
 `----------------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void * scanner, siege::Node * node)
+yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void * scanner, ehb::Node * node)
 {
   FILE *yyo = yyoutput;
   YYUSE (yyo);
@@ -681,7 +681,7 @@ yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvalue
 `--------------------------------*/
 
 static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void * scanner, siege::Node * node)
+yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void * scanner, ehb::Node * node)
 {
   YYFPRINTF (yyoutput, "%s %s (",
              yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
@@ -719,7 +719,7 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule, void * scanner, siege::Node * node)
+yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule, void * scanner, ehb::Node * node)
 {
   unsigned long int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
@@ -999,7 +999,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
 `-----------------------------------------------*/
 
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, void * scanner, siege::Node * node)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, void * scanner, ehb::Node * node)
 {
   YYUSE (yyvaluep);
   YYUSE (scanner);
@@ -1021,7 +1021,7 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, void * scanner, si
 `----------*/
 
 int
-yyparse (void * scanner, siege::Node * node)
+yyparse (void * scanner, ehb::Node * node)
 {
 /* The lookahead symbol.  */
 int yychar;
@@ -1307,7 +1307,17 @@ yyreduce:
 #line 100 "gas.y" /* yacc.c:1646  */
     {
 
-        node->appendValue((yyvsp[-3]), (yyvsp[-1]));
+        if ((yyvsp[-4]) == "x") {
+            try {
+                auto value = std::stoll((yyvsp[-1]), nullptr, 16);
+                node->appendValue((yyvsp[-3]), std::to_string(value));
+            } catch (std::exception & e) {
+                // TODO: log a warning
+                node->appendValue((yyvsp[-3]), (yyvsp[-1]));
+            }
+        } else {
+            node->appendValue((yyvsp[-3]), (yyvsp[-1]));
+        }
 
         // TODO: ensure these values are interpreted properly...?
         if ((yyvsp[-4]) == "b") {
@@ -1319,17 +1329,17 @@ yyreduce:
         }
 
     }
-#line 1323 "gas.y.cpp" /* yacc.c:1646  */
+#line 1333 "gas.y.cpp" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 122 "gas.y" /* yacc.c:1646  */
+#line 132 "gas.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[-1]) + (yyvsp[0]); }
-#line 1329 "gas.y.cpp" /* yacc.c:1646  */
+#line 1339 "gas.y.cpp" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 127 "gas.y" /* yacc.c:1646  */
+#line 137 "gas.y" /* yacc.c:1646  */
     {
 
         (yyval) = (yyvsp[0]);
@@ -1338,17 +1348,17 @@ yyreduce:
         (yyval).erase((yyval).find_last_not_of(" \n\r\t") + 1);
 
     }
-#line 1342 "gas.y.cpp" /* yacc.c:1646  */
+#line 1352 "gas.y.cpp" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 143 "gas.y" /* yacc.c:1646  */
+#line 153 "gas.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[-2]) + ':' + (yyvsp[0]); }
-#line 1348 "gas.y.cpp" /* yacc.c:1646  */
+#line 1358 "gas.y.cpp" /* yacc.c:1646  */
     break;
 
 
-#line 1352 "gas.y.cpp" /* yacc.c:1646  */
+#line 1362 "gas.y.cpp" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1576,20 +1586,20 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 146 "gas.y" /* yacc.c:1906  */
+#line 156 "gas.y" /* yacc.c:1906  */
 
 
 #include <iostream>
 #include "gas.l.hpp"
 
-void gserror(void * yyscanner, siege::Node * node, const char * msg)
+void gserror(void * yyscanner, ehb::Node * node, const char * msg)
 {
     // TODO: possibly add a getLastError function to the Gas class?
     // either way, stop spamming cout
     std::cout << "yyerror: " << msg << " (" << (node ? node->name() : "") << ")" << std::endl;
 }
 
-int gsparse_file(const char * filename, siege::Node * node)
+int gsparse_file(const char * filename, ehb::Node * node)
 {
     int result;
 
@@ -1612,7 +1622,7 @@ int gsparse_file(const char * filename, siege::Node * node)
     return result == 0;
 }
 
-int gsparse_string (const char * data, siege::Node * node)
+int gsparse_string (const char * data, ehb::Node * node)
 {
     int result;
 

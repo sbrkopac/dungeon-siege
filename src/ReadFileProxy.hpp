@@ -13,7 +13,7 @@ namespace ehb
     {
         public:
 
-            ReadFileProxy(FileSys * fileSys);
+            ReadFileProxy(FileSys & fileSys);
 
             virtual ~ReadFileProxy() = default;
 
@@ -24,7 +24,7 @@ namespace ehb
 
             std::string prepareFilePath(const std::string &filename);
 
-            FileSys * fileSys;
+            FileSys & fileSys;
             std::unordered_map<std::string, std::string> namingKeyMap;
     };
 }

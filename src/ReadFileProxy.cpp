@@ -1,11 +1,11 @@
 
 #include <list>
 #include <set>
+#include <spdlog/spdlog.h>
 #include <osgDB/FileNameUtils>
 #include <osgDB/Registry>
 #include "FileSys.hpp"
 #include "ReadFileProxy.hpp"
-#include "Logging.hpp"
 
 namespace ehb
 {
@@ -128,27 +128,29 @@ namespace ehb
         return actualFileName;
     }
 
-    ReadFileProxy::ReadFileProxy(FileSys * fileSys) : fileSys(fileSys)
+    ReadFileProxy::ReadFileProxy(FileSys & fileSys) : fileSys(fileSys)
     {
         std::set<std::string> std, ext;
 
-        fileSys->forEachFile("/art", [&std, &ext](const std::string & filename, osgDB::FileType fileType)
+        fileSys.forEachFile("/art", [&std, &ext](const std::string & filename, osgDB::FileType fileType)
         {
+            auto log = spdlog::get("log");
+
             if (osgDB::getLowerCaseFileExtension(filename) == "nnk")
             {
                 const std::string lowerCaseFileName = osgDB::convertToLowerCase(filename);
 
                 if (lowerCaseFileName.compare(0, 9, "namingkey") == 0)
                 {
-                    std.emplace(filename);                    
+                    std.emplace(filename);
 
-                    DEBUG_LOG("Added standard naming key file {}", filename);
+                    log->info("added standard naming key file {}", filename);
                 }
                 else
                 {
                     ext.emplace(filename);
 
-                    DEBUG_LOG("Added extension naming key file {}", filename);
+                    log->info("added extension naming key file {}", filename);
                 }
             }
         });
@@ -181,7 +183,7 @@ namespace ehb
         {
             std::stringstream stream;
 
-            if (fileSys->readFile(filename, stream))
+            if (fileSys.readFile(filename, stream))
             {
                 // process it...
                 parseTree(namingKeyMap, stream);
@@ -205,7 +207,7 @@ namespace ehb
             {
                 std::stringstream stream;
 
-                if (fileSys->readFile(actualFileName, stream))
+                if (fileSys.readFile(actualFileName, stream))
                 {
                     result = rw->readImage(stream, options);
 
@@ -243,7 +245,7 @@ namespace ehb
                 // std::cout << "FOUND READERWRITER!: " << rw->getCompoundClassName() << std::endl;
                 std::stringstream stream;
 
-                if (fileSys->readFile(actualFileName, stream))
+                if (fileSys.readFile(actualFileName, stream))
                 {
                     result = rw->readNode(stream, options);
 

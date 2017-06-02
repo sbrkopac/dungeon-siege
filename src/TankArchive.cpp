@@ -1,4 +1,5 @@
 
+#include <spdlog/spdlog.h>
 #include "TankArchive.hpp"
 
 namespace ehb
@@ -15,13 +16,30 @@ namespace ehb
             tankFile.openForReading(filename);
             reader.indexFile(tankFile);
 
-            // archiveFileName = filename;
+            directoryCache.clear();
+            directoryCache.reserve(reader.getDirectoryCount());
+
+            fileCache.clear();
+            fileCache.reserve(reader.getFileCount());
+
+            for (std::string filename : reader.getDirectoryList())
+            {
+                if (filename.front() != '/') filename.insert(0, 1, '/'); // this is always true
+                if (filename.back() == '/') filename.pop_back();
+
+                directoryCache.push_back(filename);
+            }
+
+            for (const std::string & filename : reader.getFileList())
+            {
+                fileCache.push_back(filename);
+            }
 
             return true;
         }
         catch (siege::TankFile::Error & e)
         {
-            std::cout << "TankArchive::open(" << filename << "): " << e.what() << std::endl;
+            spdlog::get("log")->error("TankArchive::open({}): {}", filename, e.what());
         }
 
         return false;
@@ -29,12 +47,16 @@ namespace ehb
 
     void TankArchive::close()
     {
+        directoryCache.clear();
+        fileCache.clear();
+
         try
         {
             tankFile.close();
         }
         catch (siege::TankFile::Error & e)
         {
+            spdlog::get("log")->warn("TankArchive::close(): {}", e.what());
         }
     }
 
@@ -53,83 +75,50 @@ namespace ehb
         }
         catch (siege::TankFile::Error & e)
         {
-            // std::cout << "TankArchive::readFile(" << filename << "): " << e.what() << std::endl;
+            // NOTE: don't log anything here... this'll happen *all* the time
+            // spdlog::get("log")->error("TankArchive::readFile({}): {}", filename, e.what());
         }
 
         return false;
     }
 
-    // FIXME: if "directory" has a trailing / this falls apart
-    void TankArchive::forEachFile(const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive)
+    void TankArchive::forEachFile(const std::string & directory_, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive)
     {
-        if (recursive)
+        std::string directory = directory_;
+
+        // make the directory conform to what i'm expecting
+        if (directory.front() != '/') directory.insert(0, 1, '/');
+        if (directory.back() != '/') directory.push_back('/');
+
+        for (std::string filename : directoryCache)
         {
-            for (std::string filename : reader.getDirectoryList())
+            if (filename.size() > directory.size())
             {
-                if (filename.back() == '/')
+                if (directory == filename.substr(0, directory.size()))
                 {
-                    filename.pop_back();
-                }
+                    const auto pos = filename.find('/', directory.size());
 
-                if (filename.size() > directory.size() && filename.compare(0, directory.size(), directory) == 0)
-                {
-                    callback(filename.substr(directory.size() + 1), osgDB::DIRECTORY);
-                }
-            }
-
-            for (const std::string & filename : reader.getFileList())
-            {
-                if (filename.size() > directory.size() && filename.compare(0, directory.size(), directory) == 0)
-                {
-                    callback(filename.substr(directory.size() + 1), osgDB::REGULAR_FILE);
+                    // NOTE: don't change the order of this
+                    if (recursive || pos == std::string::npos)
+                    {
+                        callback(filename.substr(directory.size()), osgDB::DIRECTORY);
+                    }
                 }
             }
         }
-        else
+
+        for (const std::string & filename : fileCache)
         {
-            for (std::string filename : reader.getDirectoryList())
+            if (filename.size() > directory.size())
             {
-                if (filename.back() == '/')
+                if (directory == filename.substr(0, directory.size()))
                 {
-                    filename.pop_back();
-                }
+                    const auto pos = filename.find('/', directory.size());
 
-                const auto pos = filename.find_last_of('/');
-
-                if (pos == 0)
-                {
-                    if (directory == "/")
+                    // NOTE: don't change the order of this
+                    if (recursive || pos == std::string::npos)
                     {
-                        callback(filename.substr(1), osgDB::DIRECTORY);
-                    }
-                }
-                else if (pos != std::string::npos)
-                {
-                    // if (directory == filename.substr(0, pos))
-                    if (filename.compare(0, pos, directory) == 0)
-                    {
-                        callback(filename.substr(pos + 1), osgDB::DIRECTORY);
-                    }
-                }
-            }
-
-            for (const std::string & filename : reader.getFileList())
-            {
-                const auto pos = filename.find_last_of('/');
-
-                if (pos == 0)
-                {
-                    if (directory == "/")
-                    {
-                        callback(filename.substr(1), osgDB::REGULAR_FILE);
-                    }
-                }
-                else if (pos != std::string::npos)
-                {
-                    // if (filename.substr(0, pos) == directory)
-                    if (filename.compare(0, pos, directory) == 0)
-                    {
-                        callback(filename.substr(pos + 1), osgDB::REGULAR_FILE);
+                        callback(filename.substr(directory.size()), osgDB::REGULAR_FILE);
                     }
                 }
             }

@@ -13,6 +13,6 @@ namespace ehb
 
         virtual ~IGameStateProvider() = default;
 
-        virtual IGameState * createGameState(const std::string & gameStateType, IGameStateMgr * gameStateMgr) = 0;
+        virtual IGameState * createGameState(const std::string & gameStateType, IGameStateMgr & gameStateMgr) = 0;
     };
 }

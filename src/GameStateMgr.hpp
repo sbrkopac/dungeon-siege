@@ -2,6 +2,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include "IGameState.hpp"
 #include "IGameStateMgr.hpp"
 
@@ -30,7 +31,7 @@ namespace ehb
 
         IGameStateProvider * provider;
 
-        std::unique_ptr<IGameState> currentState;
-        std::unique_ptr<IGameState> pendingState;
+        std::pair<std::string, std::unique_ptr<IGameState>> currentState;
+        std::pair<std::string, std::unique_ptr<IGameState>> pendingState;
     };
 }

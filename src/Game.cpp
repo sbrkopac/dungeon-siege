@@ -1,37 +1,41 @@
 
+#include <spdlog/spdlog.h>
 #include <osg/Timer>
 #include <osgDB/Registry>
+#include <osgDB/FileNameUtils>
 #include "Game.hpp"
+#include "IConfig.hpp"
 #include "ReadFileProxy.hpp"
 
+#include "BrkopacState.hpp"
 #include "InitState.hpp"
 #include "IntroState.hpp"
 #include "LogoState.hpp"
 
 namespace ehb
 {
-    Game::Game(int * argc, char * argv[]) : config(argc, argv), gameStateMgr(this), fileSys(argc, argv, &config)
+    Game::Game(IConfig & config) : config(config), gameStateMgr(this), fileSys(config), gui(fileSys, viewer)
     {
-        proxy = new EventProxy(&gameStateMgr);
+        proxy = new EventProxy(gameStateMgr, gui);
 
         // TODO: store a reference to this and then make sure you clean it up properly, if need be
         // setup osg to properly handle nnk files
-        osgDB::Registry::instance()->setReadFileCallback(new ReadFileProxy(&fileSys));
+        osgDB::Registry::instance()->setReadFileCallback(new ReadFileProxy(fileSys));
     }
 
-    Game::~Game()
+    IGameState * Game::createGameState(const std::string & gameStateType, IGameStateMgr & gameStateMgr)
     {
-    }
-
-    IGameState * Game::createGameState(const std::string & gameStateType, IGameStateMgr * gameStateMgr)
-    {
-        if (gameStateType == "InitState")
+        if (gameStateType == "BrkopacState")
         {
-            return new InitState(gameStateMgr, &config, &fileSys);
+            return new BrkopacState(gameStateMgr, config, fileSys, viewer);
+        }
+        else if (gameStateType == "InitState")
+        {
+            return new InitState(gameStateMgr, config, fileSys);
         }
         else if (gameStateType == "IntroState")
         {
-            return new IntroState(gameStateMgr);
+            return new IntroState(gameStateMgr, gui);
         }
         else if (gameStateType == "LogoState")
         {
@@ -80,6 +84,8 @@ namespace ehb
         osg::Timer fps;
 
         const float maxfps = static_cast<float>(config.getInt("maxfps", -1));
+
+        gui.blah(viewer);
 
         while (!viewer.done())
         {

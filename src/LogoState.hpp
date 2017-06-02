@@ -9,7 +9,7 @@ namespace ehb
     {
     public:
 
-        LogoState(IGameStateMgr * gameStateMgr);
+        LogoState(IGameStateMgr & gameStateMgr);
 
         virtual ~LogoState() = default;
 
@@ -19,10 +19,10 @@ namespace ehb
 
     private:
 
-        IGameStateMgr * gameStateMgr;
+        IGameStateMgr & gameStateMgr;
     };
 
-    inline LogoState::LogoState(IGameStateMgr * gameStateMgr) : gameStateMgr(gameStateMgr)
+    inline LogoState::LogoState(IGameStateMgr & gameStateMgr) : gameStateMgr(gameStateMgr)
     {
     }
 }

@@ -7,7 +7,7 @@
 #include "FileSys.hpp"
 #include "GameStateMgr.hpp"
 #include "IGameStateProvider.hpp"
-#include "SimpleConfig.hpp"
+#include "Shell.hpp"
 
 namespace ehb
 {
@@ -16,21 +16,23 @@ namespace ehb
     {
     public:
 
-        Game(int * argc, char * argv[]);
+        Game(IConfig & config);
 
-        virtual ~Game();
+        virtual ~Game() = default;
 
-        virtual IGameState * createGameState(const std::string & gameStateType, IGameStateMgr * gameStateMgr) override;
+        virtual IGameState * createGameState(const std::string & gameStateType, IGameStateMgr & gameStateMgr) override;
 
         int exec();
 
     private:
 
-        SimpleConfig config;
+        // SimpleConfig config;
+        IConfig & config;
 
         osg::ref_ptr<EventProxy> proxy;
         GameStateMgr gameStateMgr;
         osgViewer::Viewer viewer;
         FileSys fileSys;
+        Shell gui;
     };
 }

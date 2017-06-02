@@ -125,7 +125,7 @@ namespace ehb
                 }
 #else
                 if (const char * WINEPREFIX = std::getenv("WINEPREFIX"))
-                { std::cout << "WINEPREFIX: " << WINEPREFIX << std::endl;
+                {
                     const std::string system = osgDB::concatPaths(WINEPREFIX, "system.reg");
                     const std::string devices = osgDB::concatPaths(WINEPREFIX, "dosdevices");
 
@@ -135,7 +135,7 @@ namespace ehb
 
                         for (std::string section : registryKeyVec)
                         {
-                            std::cout << "looking for section: " << section << std::endl;
+                            // std::cout << "looking for section: " << section << std::endl;
 
                             { // replace all \ with \\... because wine is like that
                                 std::string::size_type index = 0;
@@ -227,25 +227,5 @@ namespace ehb
         const auto itr = stringMap.find(key);
 
         return itr != stringMap.end() ? itr->second : defaultValue;
-    }
-
-    void SimpleConfig::setBool(const std::string & key, bool value)
-    {
-        boolMap[key] = value;
-    }
-
-    void SimpleConfig::setFloat(const std::string & key, float value)
-    {
-        floatMap[key] = value;
-    }
-
-    void SimpleConfig::setInt(const std::string & key, int value)
-    {
-        intMap[key] = value;
-    }
-
-    void SimpleConfig::setString(const std::string & key, const std::string & value)
-    {
-        stringMap[key] = value;
     }
 }

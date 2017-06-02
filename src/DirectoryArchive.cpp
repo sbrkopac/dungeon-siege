@@ -4,6 +4,8 @@
 #include <osgDB/FileUtils>
 #include "DirectoryArchive.hpp"
 
+#include <experimental/filesystem>
+
 namespace ehb
 {
     DirectoryArchive::~DirectoryArchive()
@@ -16,7 +18,7 @@ namespace ehb
         if (osgDB::fileType(filename) == osgDB::DIRECTORY)
         {
             root = filename;
-            // TODO: store archive file name
+
             return true;
         }
 
@@ -49,30 +51,39 @@ namespace ehb
         return false;
     }
 
-    static
-    void forEachFileRecursive(const std::string & basepath, const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive)
-    {
-        const std::string fullpath = osgDB::concatPaths(basepath, directory);
-
-        for (const std::string & filename : osgDB::getDirectoryContents(fullpath))
-        {
-            if (filename == "." || filename == "..") continue;
-
-            const osgDB::FileType fileType = osgDB::fileType(filename);
-
-            callback(filename, fileType);
-
-            if (fileType == osgDB::DIRECTORY)
-            {
-                forEachFileRecursive(basepath, fullpath, callback, recursive);
-            }
-        }
-    }
-
     void DirectoryArchive::forEachFile(const std::string & directory, std::function<void(const std::string &, osgDB::FileType)> callback, bool recursive)
     {
-        const std::string fullpath = osgDB::concatPaths(root, directory);
+        const std::string fullpath = osgDB::concatPaths(root, !directory.empty() && directory[0] == '/' ? directory.substr(1) : directory);
 
-        forEachFileRecursive(fullpath, "", callback, recursive);
+        if (recursive)
+        {
+            namespace fs = std::experimental::filesystem;
+
+            try
+            {
+                const auto size = fullpath.size();
+
+                for (auto & p: fs::recursive_directory_iterator(fullpath))
+                {
+                    // FIXME: this won't work properly on windows with unicode file names...
+                    const std::string filename = p.path().string();
+
+                    callback(osgDB::convertFileNameToUnixStyle(filename.substr(size + 1)), osgDB::fileType(filename));
+                }
+            }
+            catch (std::exception & e)
+            {
+                // TODO: log a warning
+            }
+        }
+        else
+        {
+            for (const std::string & filename : osgDB::getDirectoryContents(fullpath))
+            {
+                if (filename == "." || filename == "..") continue;
+
+                callback(osgDB::convertFileNameToUnixStyle(filename), osgDB::fileType(osgDB::concatPaths(fullpath, filename)));
+            }
+        }
     }
 }

@@ -20,11 +20,6 @@ namespace ehb
         virtual int getInt(const std::string & key, int defaultValue = 0) override;
         virtual std::string getString(const std::string & key, const std::string & defaultValue = "") override;
 
-        void setBool(const std::string & key, bool value);
-        void setFloat(const std::string & key, float value);
-        void setInt(const std::string & key, int value);
-        void setString(const std::string & key, const std::string & value);
-
     private:
 
         std::map<std::string, bool> boolMap;

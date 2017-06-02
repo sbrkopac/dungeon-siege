@@ -1,87 +1,50 @@
 
 #include <set>
 #include <unordered_map>
+#include <spdlog/spdlog.h>
 #include <osg/ArgumentParser>
 #include <osgDB/FileNameUtils>
 #include "DirectoryArchive.hpp"
 #include "FileSys.hpp"
 #include "IConfig.hpp"
 #include "TankArchive.hpp"
-#include "Logging.hpp"
 #define DSMOD
 namespace ehb
 {
-    FileSys::FileSys(int * argc, char * argv[], IConfig * config)
+    FileSys::FileSys(IConfig & config)
     {
-        osg::ArgumentParser args(argc, argv);
+        auto log = spdlog::get("log");
 
-        std::set<std::string> uniqueSet;
-        const std::unordered_multimap<std::string, std::string> defaultValues =
-        {
-#ifdef DSMOD
-            { "--bits", osgDB::concatPaths(config->getString("data-dir"), "Bits") },
-#endif
-            { "--map_paths", osgDB::concatPaths(config->getString("ds-install-path"), "Maps") },
-            { "--mod_paths", osgDB::concatPaths(config->getString("data-dir"), "Mods") },
-            { "--res_paths", config->getString("ds-install-path") },
-            { "--res_paths", osgDB::concatPaths(config->getString("ds-install-path"), "Resources") },
-            { "--res_paths", osgDB::concatPaths(config->getString("ds-install-path"), "DSLOA") }
-        };
+        std::set<std::string> unique;
 
-        for (const std::string & key : { "--map_paths", "--mod_paths", "--res_paths" })
-        {
-            std::string arg;
-            std::set<std::string> eachArg;
-
-            const auto range = defaultValues.equal_range(key);
-
-            for (auto itr = range.first; itr != range.second; ++itr)
+        for (const std::string & directory : {
+            osgDB::concatPaths(config.getString("data-dir"), "Maps"),
+            osgDB::concatPaths(config.getString("data-dir"), "Mods"),
+            osgDB::concatPaths(config.getString("ds-install-path"), "Maps"),
+            osgDB::concatPaths(config.getString("ds-install-path"), "Mods"),
+            osgDB::concatPaths(config.getString("ds-install-path"), "Resources"),
+            // osgDB::concatPaths(config.getString("ds-install-path"), "DSLOA"),
+            config.getString("ds-install-path")
+        }) {
+            for (const std::string & filename : osgDB::getDirectoryContents(directory))
             {
-                eachArg.insert(itr->second);
-            }
+                if (filename == "." || filename == "..") continue;
 
-            if (args.find(key) != -1)
-            {
-                while (args.read(key, arg))
+                const std::string ext = osgDB::getLowerCaseFileExtension(filename);
+
+                /*
+                 * TODO: clean this up, make a globally accessible function or some such
+                 * ds -> demo extension for tanks
+                 * dsm -> ???
+                 */
+                if (ext == "ds" || ext == "dsm" || ext == "dsmap" || ext == "dsmod" || ext == "dsres" || ext == "dssave")
                 {
-                    const bool isNot = arg[0] == '!';
-
-                    if (isNot)
-                    {
-                        eachArg.clear();
-                        eachArg.insert(arg.substr(1));
-
-                        break;
-                    }
-                    else
-                    {
-                        eachArg.insert(arg);
-                    }
-                }
-            }
-
-            for (const std::string & directory : eachArg)
-            {
-                for (const std::string & filename : osgDB::getDirectoryContents(directory))
-                {
-                    if (filename == "." || filename == "..") continue;
-
-                    const std::string ext = osgDB::getLowerCaseFileExtension(filename);
-
-                    /*
-                     * TODO: clean this up, make a globally accessible function or some such
-                     * ds -> demo extension for tanks
-                     * dsm -> ???
-                     */
-                    if (ext == "ds" || ext == "dsm" || ext == "dsmap" || ext == "dsmod" || ext == "dsres" || ext == "dssave")
-                    {
-                        uniqueSet.insert(osgDB::concatPaths(directory, filename));
-                    }
+                    unique.insert(osgDB::concatPaths(directory, filename));
                 }
             }
         }
 
-        for (const std::string & filename : uniqueSet)
+        for (const std::string & filename : unique)
         {
             std::unique_ptr<IArchive> archive(new TankArchive);
 
@@ -89,11 +52,11 @@ namespace ehb
             {
                 eachArchive.push_back(std::move(archive));
 
-                DEBUG_LOG("Including tank file: {}", filename);
+                log->info("including {}", filename);
             }
             else
             {
-                DEBUG_LOG("Failed to open tank file: {}", filename);
+                log->error("failed to open tank file: {}", filename);
             }
         }
 
@@ -102,46 +65,33 @@ namespace ehb
             return static_cast<TankArchive & >(*lhs).getFileHeader().priority > static_cast<TankArchive &>(*rhs).getFileHeader().priority;
         });
 
-#ifdef DSMOD
-        // now take care of the bits
-        std::set<std::string> eachBitsArg;
-        std::string arg;
-
-        while (args.read("--bits", arg))
+        /* TODO: file name isn't sufficient to mark something as unique
+        std::unique(eachArchive.begin(), eachArchive.end(), [](const std::unique_ptr<IArchive> & lhs, const std::unique_ptr<IArchive> & rhs)
         {
-            const bool isNot = arg[0] == '!';
+            const TankArchive & lhsAsTank = static_cast<TankArchive & >(*lhs);
+            const TankArchive & rhsAsTank = static_cast<TankArchive & >(*rhs);
 
-            if (isNot)
-            {
-                eachBitsArg.clear();
-                eachBitsArg.insert(arg.substr(1));
+            return lhsAsTank.getFileHeader().indexCrc32 == rhsAsTank.getFileHeader().indexCrc32 && lhsAsTank.getFileHeader().dataCrc32 == rhsAsTank.getFileHeader().dataCrc32;
+        });
+        */
 
-                break;
-            }
-            else
-            {
-                eachBitsArg.insert(arg);
-            }
-        }
-
-        for (const std::string & directory : eachBitsArg)
+#ifdef DSMOD
         {
             std::unique_ptr<IArchive> archive(new DirectoryArchive);
 
-            if (archive->open(directory))
+            if (archive->open(osgDB::concatPaths(config.getString("data-dir"), "Bits")))
             {
                 eachArchive.insert(eachArchive.begin(), std::move(archive));
             }
         }
+
 #endif
 
         // TODO: proper logging
-        /*
         for (const auto & archive : eachArchive)
         {
-            std::cout << "including " << archive->getFileName() << std::endl;
+            // std::cout << "including " << archive->getFileName() << std::endl;
         }
-        */
     }
 
     std::string FileSys::concatPaths(const std::string & left, const std::string & right)

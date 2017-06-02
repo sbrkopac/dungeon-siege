@@ -11,7 +11,7 @@ namespace ehb
     {
     public:
 
-        InitState(IGameStateMgr * gameStateMgr, IConfig * config, FileSys * fileSys);
+        InitState(IGameStateMgr & gameStateMgr, IConfig & config, FileSys & fileSys);
 
         virtual ~InitState() = default;
 
@@ -21,12 +21,12 @@ namespace ehb
 
     private:
 
-        IGameStateMgr * gameStateMgr;
-        IConfig * config;
-        FileSys * fileSys;
+        IGameStateMgr & gameStateMgr;
+        IConfig & config;
+        FileSys & fileSys;
     };
 
-    inline InitState::InitState(IGameStateMgr * gameStateMgr, IConfig * config, FileSys * fileSys) : gameStateMgr(gameStateMgr), config(config), fileSys(fileSys)
+    inline InitState::InitState(IGameStateMgr & gameStateMgr, IConfig & config, FileSys & fileSys) : gameStateMgr(gameStateMgr), config(config), fileSys(fileSys)
     {
     }
 }

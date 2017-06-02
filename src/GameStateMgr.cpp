@@ -2,9 +2,8 @@
 #include "GameStateMgr.hpp"
 #include "IGameState.hpp"
 #include "IGameStateProvider.hpp"
+#include <spdlog/spdlog.h>
 #include <osgGA/GUIEventAdapter>
-
-#include "Logging.hpp"
 
 namespace ehb
 {
@@ -14,26 +13,27 @@ namespace ehb
 
     GameStateMgr::~GameStateMgr()
     {
-        if (currentState)
+        if (currentState.second)
         {
-            currentState->leave();
+            currentState.second->leave();
         }
     }
 
     void GameStateMgr::request(const std::string & gameStateType)
     {
-        if (IGameState * state = provider->createGameState(gameStateType, this))
+        if (IGameState * state = provider->createGameState(gameStateType, *this))
         {
-            if (pendingState != nullptr)
+            if (pendingState.second)
             {
-                WARN_LOG("The GameStateMgr still has a pending state while transitioning to a new state");
+                spdlog::get("log")->warn("GameStateMgr still has a pending state {} while requesting a new state ({})", pendingState.first, gameStateType);
             }
 
-            pendingState.reset(state);
+            pendingState.first = gameStateType;
+            pendingState.second.reset(state);
         }
         else
         {
-            WARN_LOG("GameState [{}] is unavailable", gameStateType);
+            spdlog::get("log")->warn("GameState [{}] is unavailable", gameStateType);
         }
     }
 
@@ -47,42 +47,33 @@ namespace ehb
             {
                 // std::cout << "FRAME" << std::endl;
 
-                if (pendingState)
+                if (pendingState.second)
                 {
-                    if (currentState)
+                    auto log = spdlog::get("log");
+
+                    if (currentState.second)
                     {
-                        std::stringstream ss;
+                        log->info("==========================================================================================================================");
+                        log->info("| BEGIN - WORLD STATE TRANSITION: {} --> {}", currentState.first, pendingState.first);
+                        log->info("|");
 
-                        ss << "==========================================================================================================================" << std::endl;
-                        ss << "| BEGIN - WORLD STATE TRANSITION: " << "FROM" << " --> " << "TO" << std::endl;
-                        ss << "|" << std::endl;
-
-                        INFO_LOG(ss.str());
-
-                        currentState->leave();
+                        currentState.second->leave();
                     }
                     else
                     {
-                        std::stringstream ss;
-
-                        ss << "==========================================================================================================================" << std::endl;
-                        ss << "| BEGIN - WORLD STATE TRANSITION: " << "TO" << std::endl;
-                        ss << "|" << std::endl;
-
-                        INFO_LOG(ss.str());
+                        log->info("==========================================================================================================================");
+                        log->info("| BEGIN - WORLD STATE TRANSITION: {}", pendingState.first);
+                        log->info("|");
                     }
 
-                    currentState = std::move(pendingState);
+                    currentState.first = pendingState.first;
+                    currentState.second = std::move(pendingState.second);
 
-                    currentState->enter();
+                    currentState.second->enter();
 
-                    std::stringstream ss;
-
-                    ss << "|" << std::endl;
-                    ss << "| END - WORLD STATE TRANSITION. State = " << "TO""" << std::endl;
-                    ss << "==========================================================================================================================" << std::endl;
-
-                    INFO_LOG(ss.str());
+                    log->info("|");
+                    log->info("| END - WORLD STATE TRANSITION. State = {}", pendingState.first);
+                    log->info("==========================================================================================================================");
                 }
             }
             break;
@@ -96,6 +87,6 @@ namespace ehb
                 break;
         }
 
-        return currentState->handle(event, action);
+        return currentState.second->handle(event, action);
     }
 }

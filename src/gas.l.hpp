@@ -2,12 +2,12 @@
 #define gsHEADER_H 1
 #define gsIN_HEADER 1
 
-#line 6 "gas.l.hpp"
+#line 5 "gas.l.hpp"
 
     #include <sstream>
     #include <string>
 
-#line 11 "gas.l.hpp"
+#line 10 "gas.l.hpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -16,10 +16,84 @@
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
 #define YY_FLEX_MINOR_VERSION 6
-#define YY_FLEX_SUBMINOR_VERSION 1
+#define YY_FLEX_SUBMINOR_VERSION 3
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
 #endif
+
+    #define yy_create_buffer gs_create_buffer
+
+    #define yy_delete_buffer gs_delete_buffer
+
+    #define yy_scan_buffer gs_scan_buffer
+
+    #define yy_scan_string gs_scan_string
+
+    #define yy_scan_bytes gs_scan_bytes
+
+    #define yy_init_buffer gs_init_buffer
+
+    #define yy_flush_buffer gs_flush_buffer
+
+    #define yy_load_buffer_state gs_load_buffer_state
+
+    #define yy_switch_to_buffer gs_switch_to_buffer
+
+    #define yypush_buffer_state gspush_buffer_state
+
+    #define yypop_buffer_state gspop_buffer_state
+
+    #define yyensure_buffer_stack gsensure_buffer_stack
+
+    #define yylex gslex
+
+    #define yyrestart gsrestart
+
+    #define yylex_init gslex_init
+
+    #define yylex_init_extra gslex_init_extra
+
+    #define yylex_destroy gslex_destroy
+
+    #define yyget_debug gsget_debug
+
+    #define yyset_debug gsset_debug
+
+    #define yyget_extra gsget_extra
+
+    #define yyset_extra gsset_extra
+
+    #define yyget_in gsget_in
+
+    #define yyset_in gsset_in
+
+    #define yyget_out gsget_out
+
+    #define yyset_out gsset_out
+
+    #define yyget_leng gsget_leng
+
+    #define yyget_text gsget_text
+
+    #define yyget_lineno gsget_lineno
+
+    #define yyset_lineno gsset_lineno
+
+        #define yyget_column gsget_column
+
+        #define yyset_column gsset_column
+
+    #define yywrap gswrap
+
+    #define yyget_lval gsget_lval
+
+    #define yyset_lval gsset_lval
+
+    #define yyalloc gsalloc
+
+    #define yyrealloc gsrealloc
+
+    #define yyfree gsfree
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
 
@@ -195,21 +269,21 @@ struct yy_buffer_state
 	};
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
-void gsrestart (FILE *input_file ,yyscan_t yyscanner );
-void gs_switch_to_buffer (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-YY_BUFFER_STATE gs_create_buffer (FILE *file,int size ,yyscan_t yyscanner );
-void gs_delete_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void gs_flush_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void gspush_buffer_state (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-void gspop_buffer_state (yyscan_t yyscanner );
+void gsrestart ( FILE *input_file , yyscan_t yyscanner );
+void gs_switch_to_buffer ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+YY_BUFFER_STATE gs_create_buffer ( FILE *file, int size , yyscan_t yyscanner );
+void gs_delete_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void gs_flush_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void gspush_buffer_state ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+void gspop_buffer_state ( yyscan_t yyscanner );
 
-YY_BUFFER_STATE gs_scan_buffer (char *base,yy_size_t size ,yyscan_t yyscanner );
-YY_BUFFER_STATE gs_scan_string (yyconst char *yy_str ,yyscan_t yyscanner );
-YY_BUFFER_STATE gs_scan_bytes (yyconst char *bytes,int len ,yyscan_t yyscanner );
+YY_BUFFER_STATE gs_scan_buffer ( char *base, yy_size_t size , yyscan_t yyscanner );
+YY_BUFFER_STATE gs_scan_string ( const char *yy_str , yyscan_t yyscanner );
+YY_BUFFER_STATE gs_scan_bytes ( const char *bytes, int len , yyscan_t yyscanner );
 
-void *gsalloc (yy_size_t ,yyscan_t yyscanner );
-void *gsrealloc (void *,yy_size_t ,yyscan_t yyscanner );
-void gsfree (void * ,yyscan_t yyscanner );
+void *gsalloc ( yy_size_t , yyscan_t yyscanner );
+void *gsrealloc ( void *, yy_size_t , yyscan_t yyscanner );
+void gsfree ( void * , yyscan_t yyscanner );
 
 /* Begin user sect3 */
 
@@ -242,44 +316,44 @@ void gsfree (void * ,yyscan_t yyscanner );
 
 int gslex_init (yyscan_t* scanner);
 
-int gslex_init_extra (YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
+int gslex_init_extra ( YY_EXTRA_TYPE user_defined, yyscan_t* scanner);
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int gslex_destroy (yyscan_t yyscanner );
+int gslex_destroy ( yyscan_t yyscanner );
 
-int gsget_debug (yyscan_t yyscanner );
+int gsget_debug ( yyscan_t yyscanner );
 
-void gsset_debug (int debug_flag ,yyscan_t yyscanner );
+void gsset_debug ( int debug_flag , yyscan_t yyscanner );
 
-YY_EXTRA_TYPE gsget_extra (yyscan_t yyscanner );
+YY_EXTRA_TYPE gsget_extra ( yyscan_t yyscanner );
 
-void gsset_extra (YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
+void gsset_extra ( YY_EXTRA_TYPE user_defined , yyscan_t yyscanner );
 
-FILE *gsget_in (yyscan_t yyscanner );
+FILE *gsget_in ( yyscan_t yyscanner );
 
-void gsset_in  (FILE * _in_str ,yyscan_t yyscanner );
+void gsset_in  ( FILE * _in_str , yyscan_t yyscanner );
 
-FILE *gsget_out (yyscan_t yyscanner );
+FILE *gsget_out ( yyscan_t yyscanner );
 
-void gsset_out  (FILE * _out_str ,yyscan_t yyscanner );
+void gsset_out  ( FILE * _out_str , yyscan_t yyscanner );
 
-			int gsget_leng (yyscan_t yyscanner );
+			int gsget_leng ( yyscan_t yyscanner );
 
-char *gsget_text (yyscan_t yyscanner );
+char *gsget_text ( yyscan_t yyscanner );
 
-int gsget_lineno (yyscan_t yyscanner );
+int gsget_lineno ( yyscan_t yyscanner );
 
-void gsset_lineno (int _line_number ,yyscan_t yyscanner );
+void gsset_lineno ( int _line_number , yyscan_t yyscanner );
 
-int gsget_column  (yyscan_t yyscanner );
+int gsget_column  ( yyscan_t yyscanner );
 
-void gsset_column (int _column_no ,yyscan_t yyscanner );
+void gsset_column ( int _column_no , yyscan_t yyscanner );
 
-YYSTYPE * gsget_lval (yyscan_t yyscanner );
+YYSTYPE * gsget_lval ( yyscan_t yyscanner );
 
-void gsset_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
+void gsset_lval ( YYSTYPE * yylval_param , yyscan_t yyscanner );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -287,18 +361,18 @@ void gsset_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int gswrap (yyscan_t yyscanner );
+extern "C" int gswrap ( yyscan_t yyscanner );
 #else
-extern int gswrap (yyscan_t yyscanner );
+extern int gswrap ( yyscan_t yyscanner );
 #endif
 #endif
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int ,yyscan_t yyscanner);
+static void yy_flex_strncpy ( char *, const char *, int , yyscan_t yyscanner);
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
+static int yy_flex_strlen ( const char * , yyscan_t yyscanner);
 #endif
 
 #ifndef YY_NO_INPUT
@@ -327,7 +401,7 @@ static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #define YY_DECL_IS_OURS 1
 
 extern int gslex \
-               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
+               (YYSTYPE * yylval_param , yyscan_t yyscanner);
 
 #define YY_DECL int gslex \
                (YYSTYPE * yylval_param , yyscan_t yyscanner)
@@ -350,6 +424,6 @@ extern int gslex \
 #line 121 "gas.l"
 
 
-#line 354 "gas.l.hpp"
+#line 427 "gas.l.hpp"
 #undef gsIN_HEADER
 #endif /* gsHEADER_H */
